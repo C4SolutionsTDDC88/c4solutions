@@ -1,0 +1,14 @@
+version: '3'
+services:
+  back-end:
+    container_name: node-back-end
+    restart: always
+    build: ./back-end
+    ports:
+      - '9000:3000'
+  front-end:
+    container_name: node-front-end
+    restart: always
+    build: ./front-end
+    ports:
+      - '9001:3001'
