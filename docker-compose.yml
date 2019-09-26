@@ -4,11 +4,15 @@ services:
     container_name: node-back-end
     restart: always
     build: ./back-end
+    volumes: # Volume binding
+      - './back-end:/back-end'
     ports:
       - '9000:3000'
   front-end:
     container_name: node-front-end
     restart: always
-    build: ./front-end
+    build: ./front-end # Location of our Dockerfile
+    volumes: # Volume binding
+      - './front-end:/front-end'
     ports:
       - '9001:3001'
