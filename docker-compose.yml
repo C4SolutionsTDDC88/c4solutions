@@ -1,7 +1,7 @@
 version: '3'
 services:
   back-end:
-    container_name: node-back-end
+    container_name: back-end
     restart: always
     build: ./back-end
     volumes: # Volume binding
@@ -9,8 +9,10 @@ services:
       - /back-end/node_modules
     ports:
       - '9000:3000'
+    networks:
+      - c4
   front-end:
-    container_name: node-front-end
+    container_name: front-end
     restart: always
     build: ./front-end # Location of our Dockerfile
     volumes: # Volume binding
@@ -18,3 +20,21 @@ services:
       - /front-end/node_modules
     ports:
       - '9001:3001'
+    networks:
+      - c4
+  db:
+    image: mysql:5.7
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 72hbH2ypfZLqJfEh
+      MYSQL_DATABASE: c4db
+      MYSQL_USER: c4user
+      MYSQL_PASSWORD: rMmt9CZMjwZ8ecNb
+    networks:
+      - c4
+networks:
+  c4:
+volumes:
+  db_data: {}
