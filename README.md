@@ -14,6 +14,6 @@
 ## Start development server
 **To be abale to run the development environment one most have docker server installed and running.**
 1. In a terminal see that c4solutions is your current working directory.
-2. Run the command  ``` docker-compose up --build ```.
+2. Run the command  ``` docker-compose up --build ```. *The --build flag is optional and should only be used if you have installed a new module (does not happen regularly).*
 
 **NOTE:** At the first executing docker will need to download a lot of data. Therefore this can take up to five minutes depending on your internet speed.
