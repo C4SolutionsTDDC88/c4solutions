@@ -26,12 +26,15 @@ services:
     image: mysql:5.7
     volumes:
       - db_data:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d/
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: 72hbH2ypfZLqJfEh
       MYSQL_DATABASE: c4db
       MYSQL_USER: c4user
       MYSQL_PASSWORD: rMmt9CZMjwZ8ecNb
+    ports:
+      - '3308:3306'
     networks:
       - c4
 networks:
