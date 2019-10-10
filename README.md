@@ -17,3 +17,9 @@
 2. Run the command  ``` docker-compose up --build ```. *The --build flag is optional and should only be used if you have installed a new module (does not happen regularly).*
 
 **NOTE:** At the first executing docker will need to download a lot of data. Therefore this can take up to five minutes depending on your internet speed.
+
+## The cache in Docker
+If the docker environment fails to find modules and crashes, the fault may lie with the caching in docker. To ensure this is not the problem, run the following commands:
+1. ```docker-compose down```
+2. ```docker-compose kill```
+3. ```docker-compose up --build```
