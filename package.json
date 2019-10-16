@@ -1,0 +1,25 @@
+{
+  "name": "c4solutions",
+  "version": "1.0.0",
+  "description": "## File structure for the project <img src=\"./filestructure.png\">",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "start": "docker-compose up --build",
+    "test:back-end:unit": "docker-compose -f tests/docker-compose.unit-backend.yml up --build --exit-code-from unit-back-end",
+    "test:front-end:unit": "docker-compose -f tests/docker-compose.unit-frontend.yml up --build --exit-code-from unit-front-end",
+    "docker:clean": "docker-compose down && docker-compose kill"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/C4SolutionsTDDC88/c4solutions.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/C4SolutionsTDDC88/c4solutions/issues"
+  },
+  "homepage": "https://github.com/C4SolutionsTDDC88/c4solutions#readme"
+}
