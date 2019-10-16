@@ -15,6 +15,7 @@ services:
       MYSQL_DATABASE: "${MYSQL_DATABASE}"
       MYSQL_USER: "${MYSQL_USER}"
       MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_PORT: "${MYSQL_PORT}"
     ports:
       - '9000:3000'
     networks:
@@ -42,6 +43,7 @@ services:
       MYSQL_DATABASE: "${MYSQL_DATABASE}"
       MYSQL_USER: "${MYSQL_USER}"
       MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_PORT: "${MYSQL_PORT}"
     ports:
       - '3308:${MYSQL_PORT}'
     networks:
