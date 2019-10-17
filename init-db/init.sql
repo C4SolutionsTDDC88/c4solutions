@@ -92,7 +92,7 @@ ALTER TABLE `StorageMap` ADD CONSTRAINT `StorageMap_fk0` FOREIGN KEY (`article`)
 
 ALTER TABLE `StorageMap` ADD CONSTRAINT `StorageMap_fk1` FOREIGN KEY (`container`) REFERENCES `Container`(`id`);
 
-ALTER TABLE `Kolli` ADD CONSTRAINT `Kolli_fk0` FOREIGN KEY (`id`) REFERENCES `container`(`id`);
+ALTER TABLE `Kolli` ADD CONSTRAINT `Kolli_fk0` FOREIGN KEY (`id`) REFERENCES `Container`(`id`);
 
 ALTER TABLE `Kolli` ADD CONSTRAINT `Kolli_fk1` FOREIGN KEY (`shelf`) REFERENCES `Shelf`(`id`);
 
