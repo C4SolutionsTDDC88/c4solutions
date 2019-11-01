@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "docker-compose up --build",
-    "test:back-end:unit": "docker-compose -f tests/docker-compose.unit-backend.yml up --build --exit-code-from unit-back-end",
+    "test:back-end:unit": "docker-compose -f docker-compose.unit-backend.yml up --build --exit-code-from unit-back-end",
     "test:front-end:unit": "docker-compose -f tests/docker-compose.unit-frontend.yml up --build --exit-code-from unit-front-end",
     "docker:clean": "docker-compose down && docker-compose kill",
     "docker:kill": "docker rm $(docker ps -a -q) -f && docker volume prune",
