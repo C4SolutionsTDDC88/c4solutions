@@ -16,6 +16,7 @@ services:
       MYSQL_USER: '${MYSQL_USER}'
       MYSQL_PASSWORD: '${MYSQL_PASSWORD}'
       MYSQL_PORT: '${MYSQL_PORT}'
+      NODE_ENV: debug
     ports:
       - '9000:3000'
     networks:
