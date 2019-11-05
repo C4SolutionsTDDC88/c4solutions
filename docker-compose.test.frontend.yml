@@ -1,12 +1,23 @@
 version: '3'
 services:
-  unit-back-end:
-    container_name: unit-back-end
+  test-frontend:
+    container_name: test-frontend
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile.test.yml
+    ports:
+      - '9001:3001'
+    networks:
+      - test-frontend-c4
+  test-backend:
+    container_name: test-backend
     depends_on:
       - db
     build:
       context: ./back-end
-      dockerfile: Dockerfile-unittest.yml
+      dockerfile: Dockerfile
+    ports:
+      - '9000:3000'
     environment:
       # These are stored in the .env file
       MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
@@ -14,12 +25,10 @@ services:
       MYSQL_USER: "${MYSQL_USER}"
       MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
       MYSQL_PORT: "${MYSQL_PORT}"
-      TESTING: 1
+      IN_DOCKER: 1
       WAIT_HOSTS: db:${MYSQL_PORT}
-    ports:
-      - '9000:3000'
     networks:
-      - unit-c4
+      - test-frontend-c4
   db:
     container_name: db
     build:
@@ -34,9 +43,15 @@ services:
       MYSQL_USER: "${MYSQL_USER}"
       MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
       MYSQL_PORT: "${MYSQL_PORT}"
-    ports:
-      - '3308:${MYSQL_PORT}'
     networks:
-      - unit-c4
+      - test-frontend-c4
+  saml_idp:
+    image: kristophjunge/test-saml-idp
+    environment:
+      SIMPLESAMLPHP_SP_ENTITY_ID: saml-nfc
+      SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE: http://localhost:9000/login/callback
+    ports:
+      - '8080:8080'
+      - '8443:8443'
 networks:
-  unit-c4:
+  test-frontend-c4:

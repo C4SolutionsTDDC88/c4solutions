@@ -1,15 +1,12 @@
 version: '3'
 services:
-  unit-back-end:
-    container_name: unit-back-end
+  test-backend:
+    container_name: test-backend
     depends_on:
       - db
     build:
-      context: ../back-end
-      dockerfile: Dockerfile-unittest.yml
-    volumes:
-      - '../back-end:/back-end/'
-      - /back-end/node_modules
+      context: ./back-end
+      dockerfile: Dockerfile.test.yml
     environment:
       # These are stored in the .env file
       MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
@@ -17,18 +14,20 @@ services:
       MYSQL_USER: "${MYSQL_USER}"
       MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
       MYSQL_PORT: "${MYSQL_PORT}"
+      NODE_ENV: debug
       TESTING: 1
       WAIT_HOSTS: db:${MYSQL_PORT}
     ports:
       - '9000:3000'
     networks:
-      - unit-c4
+      - test-backend-c4
   db:
     container_name: db
-    image: mysql:5.7
-    volumes:
-      - db_data:/var/lib/mysql
-      - ../init-db:/docker-entrypoint-initdb.d/
+    build:
+      context: ./
+      dockerfile: DockerDBBuildFile
+    logging:
+      driver: none
     environment:
       # These are stored in the .env file
       MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
@@ -37,10 +36,8 @@ services:
       MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
       MYSQL_PORT: "${MYSQL_PORT}"
     ports:
-      - '3308:${MYSQL_PORT}'
+      - "3308:${MYSQL_PORT}"
     networks:
-      - unit-c4
+      - test-backend-c4
 networks:
-  unit-c4:
-volumes:
-  db_data: {}
+  test-backend-c4:

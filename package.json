@@ -7,9 +7,10 @@
     "test": "tests"
   },
   "scripts": {
-    "start": "docker-compose up --build",
-    "test:back-end:unit": "docker-compose -f docker-compose.unit-backend.yml up --build --exit-code-from unit-back-end",
-    "test:front-end:unit": "docker-compose -f tests/docker-compose.unit-frontend.yml up --build --exit-code-from unit-front-end",
+    "start": "docker-compose up --build --remove-orphans",
+    "test:backend": "docker-compose -f docker-compose.test.backend.yml up --build --remove-orphans --exit-code-from test-backend",
+    "test:frontend": "docker-compose -f docker-compose.test.frontend.yml up --build --remove-orphans --exit-code-from test-e2e",
+    "test:e2e": "docker-compose -f docker-compose.test.frontend.yml up --build --remove-orphans -d && node wait.js && cd front-end && npm run test",
     "docker:clean": "docker-compose down && docker-compose kill",
     "docker:kill": "docker rm $(docker ps -a -q) -f && docker volume prune",
     "docker:db_migrate": "docker-compose down && docker-compose kill && docker volume prune && docker-compose up --build"
@@ -23,5 +24,12 @@
   "bugs": {
     "url": "https://github.com/C4SolutionsTDDC88/c4solutions/issues"
   },
-  "homepage": "https://github.com/C4SolutionsTDDC88/c4solutions#readme"
+  "homepage": "https://github.com/C4SolutionsTDDC88/c4solutions#readme",
+  "dependencies": {
+    "eslint": "^6.4.0",
+    "eslint-config-airbnb": "^18.0.1",
+    "eslint-plugin-import": "^2.18.2",
+    "node-wait-for-it": "^0.2.0",
+    "wait-on": "^3.3.0"
+  }
 }
