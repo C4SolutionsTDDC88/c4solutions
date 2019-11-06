@@ -16,7 +16,7 @@ services:
       MYSQL_PORT: "${MYSQL_PORT}"
       NODE_ENV: debug
       TESTING: 1
-      WAIT_HOSTS: db:${MYSQL_PORT}
+      WAIT_HOSTS: "db:${MYSQL_PORT}"
     ports:
       - '9000:3000'
     networks:
