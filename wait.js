@@ -3,8 +3,6 @@ const ip = require('ip');
 
 const HOST_IP = ip.address();
 
-console.log(HOST_IP);
-
 const opts = {
   resources: [
     `http://${HOST_IP}:9001`,
@@ -17,6 +15,7 @@ const opts = {
 
 
 console.log('Waiting for services to start...');
+console.log(HOST_IP);
 
 waitOn(opts).then(() => {
   console.log('Services are now upp and running...');
