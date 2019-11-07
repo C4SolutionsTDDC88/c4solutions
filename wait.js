@@ -1,8 +1,13 @@
 const waitOn = require('wait-on');
+const ip = require('ip');
+
+const HOST_IP = ip.address();
+
+console.log(HOST_IP);
 
 const opts = {
   resources: [
-    'http://localhost:9001',
+    `http://${HOST_IP}:9001`,
   ],
   delay: 1000, // initial delay in ms, default 0
   interval: 100, // poll interval in ms, default 250ms
