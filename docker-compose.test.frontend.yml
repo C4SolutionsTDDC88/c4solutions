@@ -11,8 +11,6 @@ services:
       - test-frontend-c4
   test-backend:
     container_name: test-backend
-    depends_on:
-      - db
     build:
       context: ./back-end
       dockerfile: Dockerfile
@@ -25,17 +23,18 @@ services:
       MYSQL_USER: "${MYSQL_USER}"
       MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
       MYSQL_PORT: "${MYSQL_PORT}"
-      IN_DOCKER: 1
-      WAIT_HOSTS: db:${MYSQL_PORT}
+      TESTING: 1
+      WAIT_HOSTS: db_test:${MYSQL_PORT}
     networks:
       - test-frontend-c4
-  db:
-    container_name: db
-    build:
-      context: ./
-      dockerfile: DockerDBBuildFile
+  db_test:
+    container_name: db_test
+    image: mariadb:10.4
     logging:
       driver: none
+    volumes:
+      - db_data_test:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d/
     environment:
       # These are stored in the .env file
       MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
@@ -53,5 +52,7 @@ services:
     ports:
       - '8080:8080'
       - '8443:8443'
+volumes:
+  db_data_test: {}
 networks:
   test-frontend-c4:
