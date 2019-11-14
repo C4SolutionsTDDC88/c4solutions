@@ -1,4 +1,4 @@
 FROM mysql:5.7
 COPY ./init-db/init.sql /docker-entrypoint-initdb.d/
-RUN mkdir /var/lib/mysql/db_data
-CMD ["--datadir", "/var/lib/mysql/db_data"]
+RUN mkdir /var/lib/mysql/db_data_test
+CMD ["--datadir", "/var/lib/mysql/db_data_test"]

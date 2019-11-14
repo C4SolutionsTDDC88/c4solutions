@@ -2,8 +2,6 @@ version: '3'
 services:
   test-backend:
     container_name: test-backend
-    depends_on:
-      - db
     build:
       context: ./back-end
       dockerfile: Dockerfile.test.yml
@@ -16,13 +14,13 @@ services:
       MYSQL_PORT: "${MYSQL_PORT}"
       NODE_ENV: debug
       TESTING: 1
-      WAIT_HOSTS: "db:${MYSQL_PORT}"
+      WAIT_HOSTS: "db_test:${MYSQL_PORT}"
     ports:
       - '9000:3000'
     networks:
       - test-backend-c4
-  db:
-    container_name: db
+  db_test:
+    container_name: db_test
     build:
       context: ./
       dockerfile: DockerDBBuildFile
