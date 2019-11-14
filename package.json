@@ -9,11 +9,9 @@
   "scripts": {
     "start": "docker-compose up --build --remove-orphans",
     "test:backend": "docker-compose -f docker-compose.test.backend.yml up --build --remove-orphans --exit-code-from test-backend",
-    "test:frontend": "docker-compose -f docker-compose.test.frontend.yml up --build --remove-orphans --exit-code-from test-e2e",
+    "test:backend:ci": "docker-compose -f docker-compose.test.backend.ci.yml up --build --remove-orphans --exit-code-from test-backend",
     "test:e2e": "docker-compose -f docker-compose.test.frontend.yml up --build --remove-orphans -d && node wait.js && cd front-end && npm run test",
-    "docker:clean": "docker-compose down && docker-compose kill",
-    "docker:kill": "docker rm $(docker ps -a -q) -f && docker volume prune",
-    "docker:db_migrate": "docker-compose down && docker-compose kill && docker volume prune && docker-compose up --build"
+    "docker:clean": "dockerkill.sh"
   },
   "repository": {
     "type": "git",

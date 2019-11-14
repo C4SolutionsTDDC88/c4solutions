@@ -33,7 +33,7 @@ services:
     networks:
       - c4
   db:
-    image: mysql:5.7
+    image: mariadb:10.4
     volumes:
       - db_data:/var/lib/mysql
       - ./init-db:/docker-entrypoint-initdb.d/
@@ -49,8 +49,11 @@ services:
       - '3308:${MYSQL_PORT}'
     networks:
       - c4
+    command: mysqld --innodb-buffer-pool-size=256M
   saml_idp:
     image: kristophjunge/test-saml-idp
+    logging:
+      driver: none
     environment:
       SIMPLESAMLPHP_SP_ENTITY_ID: saml-nfc
       SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE: http://localhost:9000/login/callback
