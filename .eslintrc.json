@@ -18,7 +18,7 @@
     },
     "extends": "airbnb/base",
     "rules": {
-      "linebreak-style": ["error", "windows"],
+      "linebreak-style": 0,
       "import/no-extraneous-dependencies": 0,
       "import/no-amd": 0,
       "no-param-reassign": 0,
