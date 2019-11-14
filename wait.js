@@ -1,7 +1,10 @@
 const waitOn = require('wait-on');
 const ip = require('ip');
 
-const HOST_IP = ip.address();
+
+console.log(process.env.TOOLBOX);
+const HOST_IP = process.env.TOOLBOX ? '192.168.99.100' : ip.address();
+
 
 const opts = {
   resources: [

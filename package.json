@@ -11,6 +11,7 @@
     "test:backend": "docker-compose -f docker-compose.test.backend.yml up --build --remove-orphans --exit-code-from test-backend",
     "test:backend:ci": "docker-compose -f docker-compose.test.backend.ci.yml up --build --remove-orphans --exit-code-from test-backend",
     "test:e2e": "docker-compose -f docker-compose.test.frontend.yml up --build --remove-orphans -d && node wait.js && cd front-end && npm run test",
+    "test:e2e:tool": "docker-compose -f docker-compose.test.frontend.yml up --build --remove-orphans -d && cross-env TOOLBOX=1 node wait.js  && cd front-end && cross-env TOOLBOX=1 npm run test",
     "docker:clean": "dockerkill.sh"
   },
   "repository": {
@@ -30,5 +31,8 @@
     "ip": "^1.1.5",
     "node-wait-for-it": "^0.2.0",
     "wait-on": "^3.3.0"
+  },
+  "devDependencies": {
+    "cross-env": "^6.0.3"
   }
 }
