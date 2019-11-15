@@ -62,13 +62,13 @@ CREATE TABLE `Branch` (
 CREATE TABLE `Package` (
 	`id` INT NOT NULL,
 	`package_number` varchar(255) NOT NULL UNIQUE,
-	`shelf` INT NOT NULL,
+	`shelf` INT,
 	`case` INT NOT NULL,
 	PRIMARY KEY (`id`)
 );
 
 CREATE TABLE `Container` (
-	`current_storage_room` INT NOT NULL,
+	`current_storage_room` INT,
 	`id` INT NOT NULL AUTO_INCREMENT,
 	PRIMARY KEY (`id`)
 );
