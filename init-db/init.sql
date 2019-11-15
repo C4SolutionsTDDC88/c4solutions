@@ -35,6 +35,7 @@ CREATE TABLE `StorageEvent` (
 	`package` varchar(255),
 	`shelf` varchar(255) NOT NULL,
 	`storage_room` varchar(255) NOT NULL,
+	`branch` varchar(255) NOT NULL,
 	`article` INT NOT NULL,
 	PRIMARY KEY (`id`)
 );
