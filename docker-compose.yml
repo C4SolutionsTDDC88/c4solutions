@@ -50,16 +50,6 @@ services:
     networks:
       - c4
     command: mysqld --innodb-buffer-pool-size=256M
-  saml_idp:
-    image: kristophjunge/test-saml-idp
-    logging:
-      driver: none
-    environment:
-      SIMPLESAMLPHP_SP_ENTITY_ID: saml-nfc
-      SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE: http://localhost:9000/login/callback
-    ports:
-      - '8080:8080'
-      - '8443:8443'
 networks:
   c4:
 volumes:
