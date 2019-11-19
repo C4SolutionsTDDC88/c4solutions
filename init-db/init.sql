@@ -81,8 +81,7 @@ CREATE TABLE `Shelf` (
 
 CREATE TABLE `User` (
 	`id` INT NOT NULL AUTO_INCREMENT,
-	`employee_no` varchar(30) NOT NULL UNIQUE,
-	`email` varchar(60) NOT NULL,
+	`shortcode` varchar(30) NOT NULL UNIQUE,
 	`role` varchar(10) NOT NULL,
 	PRIMARY KEY (`id`)
 );
@@ -122,7 +121,7 @@ INSERT INTO `StorageRoom` (`name`, `branch`) VALUES ("DNA materialrum 1", 1), ("
 
 select 'INSERTING INTO USER' AS '';
 
-INSERT INTO `User` (`employee_no`, `email`, `role`) VALUES ("1", "user1@example.com", "user"), ("2", "user2@example.com", "admin");
+INSERT INTO `User` (`shortcode`, `role`) VALUES ("useon", "user"), ("admon", "admin");
 
 select 'INSERTING INTO CASE' AS '';
 
