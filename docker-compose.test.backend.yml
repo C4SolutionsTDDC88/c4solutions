@@ -24,6 +24,7 @@ services:
   db_test:
     container_name: db_test
     image: mariadb:10.4
+    restart: always
     logging:
       driver: none
     volumes:
