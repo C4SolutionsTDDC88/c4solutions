@@ -21,9 +21,10 @@ services:
       - '9000:3000'
     networks:
       - test-backend-c4
+
   db_test:
     container_name: db_test
-    image: mariadb:10.4
+    image: mariadb:10.4.7
     restart: always
     logging:
       driver: none
@@ -37,6 +38,7 @@ services:
       MYSQL_USER: "${MYSQL_USER}"
       MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
       MYSQL_PORT: "${MYSQL_PORT}"
+      MYSQL_INITDB_SKIP_TZINFO: 1
     ports:
       - "3308:${MYSQL_PORT}"
     networks:
