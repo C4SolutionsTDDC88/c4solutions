@@ -45,14 +45,6 @@ services:
       MYSQL_INITDB_SKIP_TZINFO: 1
     networks:
       - test-frontend-c4
-  saml_idp:
-    image: kristophjunge/test-saml-idp
-    environment:
-      SIMPLESAMLPHP_SP_ENTITY_ID: saml-nfc
-      SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE: http://localhost:9000/login/callback
-    ports:
-      - '8080:8080'
-      - '8443:8443'
 volumes:
   db_data_test: {}
 networks:
