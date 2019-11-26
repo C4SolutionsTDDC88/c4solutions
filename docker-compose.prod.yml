@@ -23,7 +23,7 @@ services:
       JWTSECRET: '${JWTSECRET}'
       NODE_ENV: production
     ports:
-      - '9000:3000'
+      - '9000:9000'
     networks:
       - c4
   db:
