@@ -41,9 +41,10 @@ services:
       MYSQL_PASSWORD: '${MYSQL_PASSWORD}'
       MYSQL_PORT: '${MYSQL_PORT}'
     ports:
-      - '3308:${MYSQL_PORT}'
+      - '${MYSQL_PORT}:${MYSQL_PORT}'
     networks:
       - c4
+    command: mysqld --innodb-buffer-pool-size=256M
 networks:
   c4:
     driver: bridge
