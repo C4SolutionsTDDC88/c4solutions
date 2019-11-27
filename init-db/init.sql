@@ -12,6 +12,7 @@ DROP TABLE IF EXISTS `Article`;
 DROP TABLE IF EXISTS `Case`;
 DROP TABLE IF EXISTS `User`;
 DROP VIEW IF EXISTS `Article_information`;
+DROP TRIGGER IF EXISTS `storage_event_abnormal_flag`;
 
 CREATE TABLE `Case` (
 	`id` INT NOT NULL AUTO_INCREMENT,
@@ -24,6 +25,7 @@ CREATE TABLE `Article` (
 	`material_number` VARCHAR(255) NOT NULL UNIQUE,
 	`description` varchar(255),
 	`case` INT NOT NULL,
+	`unaccounted_time` INT NOT NULL DEFAULT '0',
 	PRIMARY KEY (`id`)
 );
 
@@ -38,6 +40,7 @@ CREATE TABLE `StorageEvent` (
 	`storage_room` varchar(255) NOT NULL,
 	`branch` varchar(255) NOT NULL,
 	`article` INT NOT NULL,
+	`abnormal_activity_flag` BOOLEAN NOT NULL DEFAULT 0,
 	PRIMARY KEY (`id`)
 );
 
@@ -84,11 +87,11 @@ CREATE TABLE `User` (
 	`id` INT NOT NULL AUTO_INCREMENT,
 	`shortcode` varchar(30) NOT NULL UNIQUE,
 	`role` varchar(10) NOT NULL,
+	`unaccounted_time` INT NOT NULL DEFAULT '0',
 	PRIMARY KEY (`id`)
 );
 
 select 'ADDING FOREIGN KEY CONSTRAINTS' AS '';
-
 
 ALTER TABLE `Article` ADD CONSTRAINT `Article_fk0` FOREIGN KEY (`case`) REFERENCES `Case`(`id`);
 
@@ -117,27 +120,60 @@ Case.reference_number,
 Branch.name as 'branch', 
 StorageRoom.name as 'storage_room', 
 CASE WHEN EXISTS (select package_number from Package where id  = (select container from StorageMap where article = Article.id)) THEN (select package_number from Package where id  = (select container from StorageMap where article = Article.id)) ELSE ' - ' END as package, 
-Shelf.shelf_name as 'shelf', se2.action as 'status',se1.timestamp as 'added', se2.timestamp as 'last modified', Article.description 
+Shelf.shelf_name as 'shelf', se2.action as 'status',se1.timestamp as 'timestamp', se2.timestamp as last_modified, Article.description, Article.unaccounted_time
 FROM Article, `Case`, Branch, StorageRoom, Shelf, StorageEvent as se1, StorageEvent as se2 WHERE Article.case = Case.id 
 and (StorageRoom.id = (select current_storage_room from Container where id = (select container from StorageMap where article = Article.id))) 
 and (Shelf.id = (select container from StorageMap where article = Article.id) OR Shelf.id = (select shelf from Package where id = (select container from StorageMap where article = Article.id)))
 and Branch.id = StorageRoom.branch
 AND se1.id = (SELECT id from StorageEvent WHERE article = Article.id ORDER BY timestamp ASC LIMIT 1) 
-AND se2.id = (SELECT id from StorageEvent WHERE article = Article.id ORDER BY timestamp DESC LIMIT 1) 
+AND se2.id = (SELECT id from StorageEvent WHERE article = Article.id ORDER BY timestamp DESC LIMIT 1)
 UNION 
-SELECT article.material_number, case_table.reference_number, "-" as 'branch', "-" as room, se2.action as status, "-" as shelf, se1.timestamp as `timestamp`, se2.timestamp as last_modified, "-" as package, article.description 
+SELECT article.material_number, 
+case_table.reference_number, 
+"-" as 'branch', 
+"-" as 'storage_room',
+"-" as package,
+"-" as shelf, 
+se2.action as 'status',  se1.timestamp as `timestamp`, se2.timestamp as last_modified, article.description, article.unaccounted_time
 FROM Article article, `Case` case_table, StorageMap map, StorageRoom room, StorageEvent se1, StorageEvent se2
 WHERE article.case = case_table.id AND map.article = article.id AND map.container IS NULL
 AND se1.id = (SELECT id from StorageEvent WHERE article = article.id ORDER BY `timestamp` ASC LIMIT 1)
 AND se2.id = (SELECT id from StorageEvent WHERE article = article.id ORDER BY `timestamp` DESC LIMIT 1)
 UNION
-SELECT article.material_number, case_table.reference_number, "-" as 'branch', "-" as room, se2.action as status, "-" as shelf, se1.timestamp as `timestamp`, se2.timestamp as last_modified,
-CASE WHEN EXISTS (SELECT package_number from Package WHERE id = Container.id) THEN (SELECT package_number FROM Package where id = Container.id) ELSE "-" END as package, article.description
+SELECT article.material_number, 
+case_table.reference_number, 
+"-" as 'branch', 
+"-" as 'storage_room',
+CASE WHEN EXISTS (SELECT package_number from Package WHERE id = Container.id) THEN (SELECT package_number FROM Package where id = Container.id) ELSE "-" END as package, 
+"-" as shelf, se2.action as 'status', se1.timestamp as `timestamp`, se2.timestamp as last_modified, article.description, article.unaccounted_time
 FROM Article article, `Case` case_table, StorageMap map, StorageEvent se1, StorageEvent se2, Container, Package
 WHERE article.case = case_table.id AND map.article = article.id AND map.container = Container.id AND Container.current_storage_room IS NUll AND Package.id = Container.id 
 AND Package.shelf IS NUll 
 AND se1.id = (SELECT id from StorageEvent WHERE article = article.id ORDER BY `timestamp` ASC LIMIT 1) 
 AND se2.id = (SELECT id from StorageEvent WHERE article = article.id ORDER BY `timestamp` DESC LIMIT 1);
+
+
+DELIMITER $$
+CREATE TRIGGER storage_event_abnormal_flag
+    BEFORE INSERT
+    ON StorageEvent FOR EACH ROW
+BEGIN
+	DECLARE last_status VARCHAR(20);
+	DECLARE time_diff INT;
+	DECLARE last_timestamp INT; 
+
+	IF (NEW.action = "checked_in") THEN
+		SELECT action, `timestamp` INTO last_status, last_timestamp FROM StorageEvent WHERE article = NEW.article ORDER BY `timestamp`DESC LIMIT 1;
+		IF  (last_status = "checked_in") THEN
+			SET NEW.abnormal_activity_flag = 1;
+			SELECT (NEW.timestamp - last_timestamp) INTO time_diff;
+			UPDATE User SET unaccounted_time = (unaccounted_time + time_diff) WHERE id = NEW.user;
+			UPDATE Article SET unaccounted_time = (unaccounted_time + time_diff) WHERE id = NEW.article;
+		END IF;
+	END IF;
+END$$  
+
+DELIMITER ;
 
 select 'INSERTING INTO BRANCH' AS '';
 
@@ -200,11 +236,11 @@ INSERT INTO `Shelf` (`shelf_name`,`id`) VALUES ("A6",41),("A3",42),("B6",43),("A
 
 select 'INSERTING INTO PACKAGE' AS '';
 
-INSERT INTO `Package` (`package_number`,`shelf`,`case`,`id`) VALUES (CONCAT((SELECT reference_number FROM `Case` WHERE id = 23),"-01"),41,23,51),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 61),"-01"),34,61,52),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 91),"-02"),26,91,53),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 54),"-01"),39,77,54),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 34),"-01"),38,34,55),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 69),"-02"),24,69,56),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 75),"-01"),16,75,57),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 80),"-01"),19,80,58),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 68),"-01"),39,68,59),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 32),"-02"),14,32,60);
-INSERT INTO `Package` (`package_number`,`shelf`,`case`,`id`) VALUES (CONCAT((SELECT reference_number FROM `Case` WHERE id = 12),"-01"),3,12,61),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 51),"-01"),22,51,62),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 66),"-01"),33,66,63),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 9),"-01"),5,9,64),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 16),"-02"),38,16,65),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 53),"-02"),21,53,66),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 69),"-01"),12,69,67),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 16),"-01"),24,16,68),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 44),"-01"),15,44,69),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 85),"-01"),30,85,70);
-INSERT INTO `Package` (`package_number`,`shelf`,`case`,`id`) VALUES (CONCAT((SELECT reference_number FROM `Case` WHERE id = 60),"-01"),42,60,71),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 27),"-01"),46,27,72),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 53),"-01"),45,53,73),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 32),"-01"),22,32,74),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 9),"-03"),2,9,75),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 42),"-01"),49,42,76),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 65),"-02"),26,65,77),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 31),"-02"),36,31,78),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 24),"-01"),45,24,79),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 39),"-01"),5,39,80);
-INSERT INTO `Package` (`package_number`,`shelf`,`case`,`id`) VALUES (CONCAT((SELECT reference_number FROM `Case` WHERE id = 21),"-01"),21,21,81),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 63),"-01"),12,63,82),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 83),"-01"),47,83,83),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 21),"-02"),37,21,84),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 76),"-01"),36,76,85),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 22),"-01"),18,22,86),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 71),"-01"),25,71,87),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 81),"-02"),38,81,88),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 65),"-01"),7,65,89),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 73),"-01"),31,73,90);
-INSERT INTO `Package` (`package_number`,`shelf`,`case`,`id`) VALUES (CONCAT((SELECT reference_number FROM `Case` WHERE id = 5),"-01"),34,5,91),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 62),"-01"),13,62,92),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 36),"-01"),35,36,93),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 30),"-02"),27,30,94),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 74),"-01"),20,74,95),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 77),"-01"),8,77,96),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 56),"-02"),38,56,97),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 58),"-01"),28,58,98),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 81),"-01"),21,81,99),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 56),"-01"),18,56,100);
+INSERT INTO `Package` (`package_number`,`shelf`,`case`,`id`) VALUES (CONCAT((SELECT reference_number FROM `Case` WHERE id = 23),"-K01"),41,23,51),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 61),"-K01"),34,61,52),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 91),"-K02"),26,91,53),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 54),"-K01"),39,77,54),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 34),"-K01"),38,34,55),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 69),"-K02"),24,69,56),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 75),"-K01"),16,75,57),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 80),"-K01"),19,80,58),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 68),"-K01"),39,68,59),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 32),"-K02"),14,32,60);
+INSERT INTO `Package` (`package_number`,`shelf`,`case`,`id`) VALUES (CONCAT((SELECT reference_number FROM `Case` WHERE id = 12),"-K01"),3,12,61),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 51),"-K01"),22,51,62),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 66),"-K01"),33,66,63),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 9),"-K01"),5,9,64),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 16),"-K02"),38,16,65),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 53),"-K02"),21,53,66),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 69),"-K01"),12,69,67),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 16),"-K01"),24,16,68),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 44),"-K01"),15,44,69),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 85),"-K01"),30,85,70);
+INSERT INTO `Package` (`package_number`,`shelf`,`case`,`id`) VALUES (CONCAT((SELECT reference_number FROM `Case` WHERE id = 60),"-K01"),42,60,71),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 27),"-K01"),46,27,72),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 53),"-K01"),45,53,73),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 32),"-K01"),22,32,74),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 9),"-K03"),2,9,75),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 42),"-K01"),49,42,76),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 65),"-K02"),26,65,77),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 31),"-K02"),36,31,78),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 24),"-K01"),45,24,79),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 39),"-K01"),5,39,80);
+INSERT INTO `Package` (`package_number`,`shelf`,`case`,`id`) VALUES (CONCAT((SELECT reference_number FROM `Case` WHERE id = 21),"-K01"),21,21,81),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 63),"-K01"),12,63,82),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 83),"-K01"),47,83,83),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 21),"-K02"),37,21,84),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 76),"-K01"),36,76,85),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 22),"-K01"),18,22,86),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 71),"-K01"),25,71,87),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 81),"-K02"),38,81,88),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 65),"-K01"),7,65,89),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 73),"-K01"),31,73,90);
+INSERT INTO `Package` (`package_number`,`shelf`,`case`,`id`) VALUES (CONCAT((SELECT reference_number FROM `Case` WHERE id = 5),"-K01"),34,5,91),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 62),"-K01"),13,62,92),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 36),"-K01"),35,36,93),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 30),"-K02"),27,30,94),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 74),"-K01"),20,74,95),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 77),"-K01"),8,77,96),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 56),"-K02"),38,56,97),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 58),"-K01"),28,58,98),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 81),"-K01"),21,81,99),(CONCAT((SELECT reference_number FROM `Case` WHERE id = 56),"-K01"),18,56,100);
 
 select 'INSERTING INTO STORAGE EVENT' AS '';
 
