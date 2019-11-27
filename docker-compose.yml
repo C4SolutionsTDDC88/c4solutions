@@ -18,7 +18,8 @@ services:
       MYSQL_PORT: '${MYSQL_PORT}'
       PROD_URL: '${PROD_URL}'
       PROD_PORT: '${PROD_PORT}'
-      DEV_URL: '${DEV_URL}'
+      DEV_URL_FRONTEND: '${DEV_URL_FRONTEND}'
+      DEV_URL_BACKEND:  '${DEV_URL_BACKEND}'
       DEV_FRONTEND_PORT: '${DEV_FRONTEND_PORT}'
       DEV_BACKEND_PORT: '${DEV_BACKEND_PORT}'
       JWTSECRET: '${JWTSECRET}'
@@ -40,12 +41,6 @@ services:
     networks:
       - c4
     environment:
-      PROD_URL: '${PROD_URL}'
-      PROD_PORT: '${PROD_PORT}'
-      DEV_URL: '${DEV_URL}'
-      DEV_FRONTEND_PORT: '${DEV_FRONTEND_PORT}'
-      DEV_BACKEND_PORT: '${DEV_BACKEND_PORT}'
-      APISUFFIX: '${APISUFFIX}'
       NODE_ENV: development
   db:
     image: mariadb:10.4
@@ -68,6 +63,7 @@ services:
     command: mysqld --innodb-buffer-pool-size=256M
 networks:
   c4:
+    name: c4
     driver: bridge
 volumes:
   db_data: {}
