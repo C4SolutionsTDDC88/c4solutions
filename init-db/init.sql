@@ -12,6 +12,7 @@ DROP TABLE IF EXISTS `Article`;
 DROP TABLE IF EXISTS `Case`;
 DROP TABLE IF EXISTS `User`;
 DROP VIEW IF EXISTS `Article_information`;
+DROP TRIGGER IF EXISTS `storage_event_abnormal_flag`;
 
 CREATE TABLE `Case` (
 	`id` INT NOT NULL AUTO_INCREMENT,
@@ -24,6 +25,7 @@ CREATE TABLE `Article` (
 	`material_number` VARCHAR(255) NOT NULL UNIQUE,
 	`description` varchar(255),
 	`case` INT NOT NULL,
+	`unaccounted_time` INT NOT NULL DEFAULT '0',
 	PRIMARY KEY (`id`)
 );
 
@@ -38,6 +40,7 @@ CREATE TABLE `StorageEvent` (
 	`storage_room` varchar(255) NOT NULL,
 	`branch` varchar(255) NOT NULL,
 	`article` INT NOT NULL,
+	`abnormal_activity_flag` BOOLEAN NOT NULL DEFAULT 0,
 	PRIMARY KEY (`id`)
 );
 
@@ -84,11 +87,11 @@ CREATE TABLE `User` (
 	`id` INT NOT NULL AUTO_INCREMENT,
 	`shortcode` varchar(30) NOT NULL UNIQUE,
 	`role` varchar(10) NOT NULL,
+	`unaccounted_time` INT NOT NULL DEFAULT '0',
 	PRIMARY KEY (`id`)
 );
 
 select 'ADDING FOREIGN KEY CONSTRAINTS' AS '';
-
 
 ALTER TABLE `Article` ADD CONSTRAINT `Article_fk0` FOREIGN KEY (`case`) REFERENCES `Case`(`id`);
 
@@ -117,7 +120,7 @@ Case.reference_number,
 Branch.name as 'branch', 
 StorageRoom.name as 'storage_room', 
 CASE WHEN EXISTS (select package_number from Package where id  = (select container from StorageMap where article = Article.id)) THEN (select package_number from Package where id  = (select container from StorageMap where article = Article.id)) ELSE ' - ' END as package, 
-Shelf.shelf_name as 'shelf', se2.action as 'status',se1.timestamp as 'timestamp', se2.timestamp as last_modified, Article.description 
+Shelf.shelf_name as 'shelf', se2.action as 'status',se1.timestamp as 'timestamp', se2.timestamp as last_modified, Article.description, Article.unaccounted_time
 FROM Article, `Case`, Branch, StorageRoom, Shelf, StorageEvent as se1, StorageEvent as se2 WHERE Article.case = Case.id 
 and (StorageRoom.id = (select current_storage_room from Container where id = (select container from StorageMap where article = Article.id))) 
 and (Shelf.id = (select container from StorageMap where article = Article.id) OR Shelf.id = (select shelf from Package where id = (select container from StorageMap where article = Article.id)))
@@ -131,7 +134,7 @@ case_table.reference_number,
 "-" as 'storage_room',
 "-" as package,
 "-" as shelf, 
-se2.action as 'status',  se1.timestamp as `timestamp`, se2.timestamp as last_modified, article.description 
+se2.action as 'status',  se1.timestamp as `timestamp`, se2.timestamp as last_modified, article.description, article.unaccounted_time
 FROM Article article, `Case` case_table, StorageMap map, StorageRoom room, StorageEvent se1, StorageEvent se2
 WHERE article.case = case_table.id AND map.article = article.id AND map.container IS NULL
 AND se1.id = (SELECT id from StorageEvent WHERE article = article.id ORDER BY `timestamp` ASC LIMIT 1)
@@ -142,12 +145,35 @@ case_table.reference_number,
 "-" as 'branch', 
 "-" as 'storage_room',
 CASE WHEN EXISTS (SELECT package_number from Package WHERE id = Container.id) THEN (SELECT package_number FROM Package where id = Container.id) ELSE "-" END as package, 
-"-" as shelf, se2.action as 'status', se1.timestamp as `timestamp`, se2.timestamp as last_modified, article.description 
+"-" as shelf, se2.action as 'status', se1.timestamp as `timestamp`, se2.timestamp as last_modified, article.description, article.unaccounted_time
 FROM Article article, `Case` case_table, StorageMap map, StorageEvent se1, StorageEvent se2, Container, Package
 WHERE article.case = case_table.id AND map.article = article.id AND map.container = Container.id AND Container.current_storage_room IS NUll AND Package.id = Container.id 
 AND Package.shelf IS NUll 
 AND se1.id = (SELECT id from StorageEvent WHERE article = article.id ORDER BY `timestamp` ASC LIMIT 1) 
 AND se2.id = (SELECT id from StorageEvent WHERE article = article.id ORDER BY `timestamp` DESC LIMIT 1);
+
+
+DELIMITER $$
+CREATE TRIGGER storage_event_abnormal_flag
+    BEFORE INSERT
+    ON StorageEvent FOR EACH ROW
+BEGIN
+	DECLARE last_status VARCHAR(20);
+	DECLARE time_diff INT;
+	DECLARE last_timestamp INT; 
+
+	IF (NEW.action = "checked_in") THEN
+		SELECT action, `timestamp` INTO last_status, last_timestamp FROM StorageEvent WHERE article = NEW.article ORDER BY `timestamp`DESC LIMIT 1;
+		IF  (last_status = "checked_in") THEN
+			SET NEW.abnormal_activity_flag = 1;
+			SELECT (NEW.timestamp - last_timestamp) INTO time_diff;
+			UPDATE User SET unaccounted_time = (unaccounted_time + time_diff) WHERE id = NEW.user;
+			UPDATE Article SET unaccounted_time = (unaccounted_time + time_diff) WHERE id = NEW.article;
+		END IF;
+	END IF;
+END$$  
+
+DELIMITER ;
 
 select 'INSERTING INTO BRANCH' AS '';
 
