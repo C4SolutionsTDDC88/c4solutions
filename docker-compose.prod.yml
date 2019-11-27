@@ -44,7 +44,6 @@ services:
       - '3308:${MYSQL_PORT}'
     networks:
       - c4
-    command: mysqld --innodb-buffer-pool-size=256M
 networks:
   c4:
     driver: bridge
