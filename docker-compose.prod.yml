@@ -35,6 +35,7 @@ services:
     restart: always
     environment:
       # These are stored in the .env file
+      DB_HOST: db
       MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
       MYSQL_DATABASE: '${MYSQL_DATABASE}'
       MYSQL_USER: '${MYSQL_USER}'
