@@ -15,8 +15,9 @@ services:
       NODE_ENV: debug
       TESTING: 1
       WAIT_HOSTS: "db_test:${MYSQL_PORT}"
+      APISUFFIX: '${APISUFFIX}'
     ports:
-      - '9000:3000'
+      - '9000:9000'
     networks:
       - test-backend-c4
   db_test:

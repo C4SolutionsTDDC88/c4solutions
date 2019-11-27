@@ -16,9 +16,16 @@ services:
       MYSQL_USER: '${MYSQL_USER}'
       MYSQL_PASSWORD: '${MYSQL_PASSWORD}'
       MYSQL_PORT: '${MYSQL_PORT}'
-      NODE_ENV: debug
+      PROD_URL: '${PROD_URL}'
+      PROD_PORT: '${PROD_PORT}'
+      DEV_URL: '${DEV_URL}'
+      DEV_FRONTEND_PORT: '${DEV_FRONTEND_PORT}'
+      DEV_BACKEND_PORT: '${DEV_BACKEND_PORT}'
+      JWTSECRET: '${JWTSECRET}'
+      APISUFFIX: '${APISUFFIX}'
+      NODE_ENV: development
     ports:
-      - '9000:3000'
+      - '9000:9000'
     networks:
       - c4
   front-end:
@@ -29,9 +36,17 @@ services:
       - './front-end:/front-end/'
       - /front-end/node_modules
     ports:
-      - '9001:3001'
+      - '9001:9001'
     networks:
       - c4
+    environment:
+      PROD_URL: '${PROD_URL}'
+      PROD_PORT: '${PROD_PORT}'
+      DEV_URL: '${DEV_URL}'
+      DEV_FRONTEND_PORT: '${DEV_FRONTEND_PORT}'
+      DEV_BACKEND_PORT: '${DEV_BACKEND_PORT}'
+      APISUFFIX: '${APISUFFIX}'
+      NODE_ENV: development
   db:
     image: mariadb:10.4
     volumes:

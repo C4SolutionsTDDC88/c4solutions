@@ -21,6 +21,7 @@ services:
       DEV_FRONTEND_PORT: '${DEV_FRONTEND_PORT}'
       DEV_BACKEND_PORT: '${DEV_BACKEND_PORT}'
       JWTSECRET: '${JWTSECRET}'
+      APISUFFIX: '${APISUFFIX}'
       NODE_ENV: production
     ports:
       - '9000:9000'
