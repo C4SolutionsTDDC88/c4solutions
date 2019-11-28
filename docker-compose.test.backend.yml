@@ -17,8 +17,9 @@ services:
       NODE_ENV: debug
       TESTING: 1
       WAIT_HOSTS: "db_test:${MYSQL_PORT}"
+      APISUFFIX: '${APISUFFIX}'
     ports:
-      - '9000:3000'
+      - '9000:9000'
     networks:
       - test-backend-c4
 
@@ -33,6 +34,7 @@ services:
       - ./init-db:/docker-entrypoint-initdb.d/
     environment:
       # These are stored in the .env file
+      DB_HOST: db_test
       MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
       MYSQL_DATABASE: "${MYSQL_DATABASE}"
       MYSQL_USER: "${MYSQL_USER}"

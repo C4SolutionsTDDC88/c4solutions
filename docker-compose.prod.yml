@@ -1,14 +1,13 @@
 version: '3'
 services:
-  back-end:
-    container_name: back-end
+  server:
+    container_name: server
+    build:
+      context: ./
+      dockerfile: DockerFile
     depends_on:
       - db
     restart: always
-    build: ./back-end
-    volumes:
-      - './back-end:/back-end/'
-      - /back-end/node_modules
     environment:
       # These are stored in the .env file
       MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
@@ -18,30 +17,13 @@ services:
       MYSQL_PORT: '${MYSQL_PORT}'
       PROD_URL: '${PROD_URL}'
       PROD_PORT: '${PROD_PORT}'
-      DEV_URL_FRONTEND: '${DEV_URL_FRONTEND}'
-      DEV_URL_BACKEND:  '${DEV_URL_BACKEND}'
-      DEV_FRONTEND_PORT: '${DEV_FRONTEND_PORT}'
-      DEV_BACKEND_PORT: '${DEV_BACKEND_PORT}'
       JWTSECRET: '${JWTSECRET}'
       APISUFFIX: '${APISUFFIX}'
-      NODE_ENV: development
+      NODE_ENV: production
     ports:
       - '9000:9000'
     networks:
       - c4
-  front-end:
-    container_name: front-end
-    restart: always
-    build: ./front-end # Location of our Dockerfile
-    volumes: # Volume binding
-      - './front-end:/front-end/'
-      - /front-end/node_modules
-    ports:
-      - '9001:9001'
-    networks:
-      - c4
-    environment:
-      NODE_ENV: development
   db:
     image: mariadb:10.4
     volumes:
@@ -57,7 +39,7 @@ services:
       MYSQL_PASSWORD: '${MYSQL_PASSWORD}'
       MYSQL_PORT: '${MYSQL_PORT}'
     ports:
-      - '3308:${MYSQL_PORT}'
+      - '${MYSQL_PORT}:${MYSQL_PORT}'
     networks:
       - c4
     command: mysqld --innodb-buffer-pool-size=256M

@@ -1,0 +1,12 @@
+FROM node:10.16.3
+
+# Setup back end environment
+COPY ./back-end ./
+RUN npm install
+
+# Copy over static front-end production files to back-end
+COPY ./front-end/dist/front-end ./public
+
+EXPOSE 9000
+# Start server
+CMD npm run production
