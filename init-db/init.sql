@@ -120,7 +120,7 @@ Case.reference_number,
 Branch.name as 'branch', 
 StorageRoom.name as 'storage_room', 
 CASE WHEN EXISTS (select package_number from Package where id  = (select container from StorageMap where article = Article.id)) THEN (select package_number from Package where id  = (select container from StorageMap where article = Article.id)) ELSE ' - ' END as package, 
-Shelf.shelf_name as 'shelf', se2.action as 'status',se1.timestamp as 'timestamp', se2.timestamp as last_modified, Article.description, Article.unaccounted_time
+Shelf.shelf_name as 'shelf', se2.action as 'status',se1.timestamp as 'timestamp', se2.timestamp as last_modified, Article.description, Article.unaccounted_time, Article.id
 FROM Article, `Case`, Branch, StorageRoom, Shelf, StorageEvent as se1, StorageEvent as se2 WHERE Article.case = Case.id 
 and (StorageRoom.id = (select current_storage_room from Container where id = (select container from StorageMap where article = Article.id))) 
 and (Shelf.id = (select container from StorageMap where article = Article.id) OR Shelf.id = (select shelf from Package where id = (select container from StorageMap where article = Article.id)))
@@ -134,7 +134,7 @@ case_table.reference_number,
 "-" as 'storage_room',
 "-" as package,
 "-" as shelf, 
-se2.action as 'status',  se1.timestamp as `timestamp`, se2.timestamp as last_modified, article.description, article.unaccounted_time
+se2.action as 'status',  se1.timestamp as `timestamp`, se2.timestamp as last_modified, article.description, article.unaccounted_time, article.id
 FROM Article article, `Case` case_table, StorageMap map, StorageRoom room, StorageEvent se1, StorageEvent se2
 WHERE article.case = case_table.id AND map.article = article.id AND map.container IS NULL
 AND se1.id = (SELECT id from StorageEvent WHERE article = article.id ORDER BY `timestamp` ASC LIMIT 1)
@@ -145,7 +145,7 @@ case_table.reference_number,
 "-" as 'branch', 
 "-" as 'storage_room',
 CASE WHEN EXISTS (SELECT package_number from Package WHERE id = Container.id) THEN (SELECT package_number FROM Package where id = Container.id) ELSE "-" END as package, 
-"-" as shelf, se2.action as 'status', se1.timestamp as `timestamp`, se2.timestamp as last_modified, article.description, article.unaccounted_time
+"-" as shelf, se2.action as 'status', se1.timestamp as `timestamp`, se2.timestamp as last_modified, article.description, article.unaccounted_time, article.id
 FROM Article article, `Case` case_table, StorageMap map, StorageEvent se1, StorageEvent se2, Container, Package
 WHERE article.case = case_table.id AND map.article = article.id AND map.container = Container.id AND Container.current_storage_room IS NUll AND Package.id = Container.id 
 AND Package.shelf IS NUll 
