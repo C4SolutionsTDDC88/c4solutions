@@ -27,7 +27,7 @@ services:
   db:
     image: mariadb:10.4
     volumes:
-      - db_data:/var/lib/mysql
+      - ./db_data:/var/lib/mysql
       - ./init-db:/docker-entrypoint-initdb.d/
     restart: always
     environment:
@@ -46,5 +46,3 @@ services:
 networks:
   c4:
     driver: bridge
-volumes:
-  db_data: {}
