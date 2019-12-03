@@ -187,6 +187,42 @@ select 'INSERTING INTO USER' AS '';
 
 INSERT INTO `User` (`shortcode`, `role`) VALUES ("useon", "user"), ("admon", "admin");
 
+INSERT INTO `Container` (`current_storage_room`) VALUES (1),(2),(3),(4),(5),(6),(1),(2),(3),(4),(1);
+
+select 'INSERTING INTO SHELF' AS '';
+
+INSERT INTO `Shelf` (`shelf_name`,`id`) VALUES ("DNA1-1",1),("DNA2-1",2),("F1",3),("UPP1",4),("V1",5),("BIO-1",6),("DNA1-2",7),("DNA2-2",8),("F2",9),("UPP2",10);
+
+
+INSERT INTO `Case` (`reference_number`) VALUES ("123456"),("111111"),("222222"),("333333");
+
+INSERT INTO `Article` (`material_number`,`description`,`case`) 
+VALUES ("123456-01","Gevärspipa",1),
+("111111-01","Del av finger",2),
+("111111-02","Tops med saliv",2),
+("222222-01","Gevärspipa",3),
+("333333-01","Bomullstopp med krutrester",4),
+("333333-02","Bomullsrondell",4);
+
+INSERT INTO `Package` (`package_number`,`shelf`,`case`,`id`) 
+VALUES ("111111-K01",2,2,11);
+
+INSERT INTO `StorageEvent` (`action`,`timestamp`,`user`,`shelf`,`storage_room`,`branch`,`article`) 
+VALUES 
+("checked_out","1559679491","useon","DNA1-1","DNA materialrum 1","DNA",1),
+("checked_in","1565679491","useon","DNA2-1","DNA materialrum 2","DNA",2),
+("checked_in","1565679491","useon","DNA2-1","DNA materialrum 2","DNA",3),
+("discarded","1534679491","useon","UPP1","Uppackning förråd","Uppackning",4),
+("incorporated","1570019491","useon","F1","Finger materialrum","Finger",5),
+("processed","1569001941","useon","F1","Finger materialrum","Finger",6);
+
+INSERT INTO `StorageMap` (`article`,`container`) 
+VALUES 
+(1,null),(2,11),(3,11),(4,null),(5,3),(6,null);
+
+
+
+/*
 select 'INSERTING INTO CASE' AS '';
 
 INSERT INTO `Case` (`reference_number`) VALUES ("607345"),("782393"),("440305"),("295073"),("700439"),("493064"),("013931"),("868911"),("587912"),("268182");
@@ -267,3 +303,4 @@ INSERT INTO `StorageMap` (`article`,`container`) VALUES (61,94),(62,26),(63,100)
 INSERT INTO `StorageMap` (`article`,`container`) VALUES (71,92),(72,96),(73,72),(74,30),(75,97),(76,87),(77,86),(78,90),(79,56),(80,48);
 INSERT INTO `StorageMap` (`article`,`container`) VALUES (81,14),(82,92),(83,93),(84,3),(85,77),(86,32),(87,8),(88,22),(89,38),(90,19);
 INSERT INTO `StorageMap` (`article`,`container`) VALUES (91,44),(92,23),(93,69),(94,46),(95,99),(96,39),(97,90),(98,18),(99,49);
+*/
