@@ -13,6 +13,8 @@ DROP TABLE IF EXISTS `Case`;
 DROP TABLE IF EXISTS `User`;
 DROP VIEW IF EXISTS `Article_information`;
 DROP TRIGGER IF EXISTS `storage_event_abnormal_flag`;
+DROP TRIGGER IF EXISTS `unpacked_package_insert`;
+DROP TRIGGER IF EXISTS `unpacked_package_update`;
 
 CREATE TABLE `Case` (
 	`id` INT NOT NULL AUTO_INCREMENT,
@@ -68,6 +70,7 @@ CREATE TABLE `Package` (
 	`package_number` varchar(255) NOT NULL UNIQUE,
 	`shelf` INT,
 	`case` INT NOT NULL,
+	`unpacked` BOOLEAN NOT NULL DEFAULT 1,
 	PRIMARY KEY (`id`)
 );
 
@@ -150,7 +153,14 @@ FROM Article article, `Case` case_table, StorageMap map, StorageEvent se1, Stora
 WHERE article.case = case_table.id AND map.article = article.id AND map.container = Container.id AND Container.current_storage_room IS NUll AND Package.id = Container.id 
 AND Package.shelf IS NUll 
 AND se1.id = (SELECT id from StorageEvent WHERE article = article.id ORDER BY `timestamp` ASC LIMIT 1) 
-AND se2.id = (SELECT id from StorageEvent WHERE article = article.id ORDER BY `timestamp` DESC LIMIT 1);
+AND se2.id = (SELECT id from StorageEvent WHERE article = article.id ORDER BY `timestamp` DESC LIMIT 1)
+UNION
+SELECT 'OUPPACKAT' AS 'material_number', `Case`.reference_number, Branch.name as 'branch', StorageRoom.name as 'storage_room', Package.package_number as 'package',
+Shelf.shelf_name as 'shelf', 'checked_in' as 'status', '-' as 'timestamp', '-' as last_modified, '-' as 'description', '-' as 'unaccounted_time', '-' as 'id'
+FROM Package, StorageRoom, Branch, Shelf, Container, `Case`
+WHERE Package.unpacked = 1 AND StorageRoom.branch = Branch.id AND Container.current_storage_room = StorageRoom.id 
+AND Container.id = Package.id AND Shelf.id = Package.shelf AND Package.case = `Case`.id;
+
 
 
 DELIMITER $$
@@ -170,6 +180,24 @@ BEGIN
 			UPDATE User SET unaccounted_time = (unaccounted_time + time_diff) WHERE id = NEW.user;
 			UPDATE Article SET unaccounted_time = (unaccounted_time + time_diff) WHERE id = NEW.article;
 		END IF;
+	END IF;
+END$$  
+
+CREATE TRIGGER unpacked_package_update
+    AFTER UPDATE
+    ON StorageMap FOR EACH ROW
+BEGIN
+	IF EXISTS (SELECT * FROM Package WHERE id = NEW.container) THEN
+		UPDATE Package SET unpacked = 0 WHERE id = NEW.container;
+	END IF;
+END$$  
+
+CREATE TRIGGER unpacked_package_insert
+    AFTER INSERT
+    ON StorageMap FOR EACH ROW
+BEGIN
+	IF EXISTS (SELECT * FROM Package WHERE id = NEW.container) THEN
+		UPDATE Package SET unpacked = 0 WHERE id = NEW.container;
 	END IF;
 END$$  
 
