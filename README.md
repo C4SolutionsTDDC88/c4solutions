@@ -22,7 +22,7 @@ If the docker environment fails to find modules and crashes, the fault may lie w
 
 # Deployment on a server
 
-## Prerequisite on the server environment
+## Prerequisites on the server environment
 All the prerequisites have been fetch with sudo apt-get <package-name>
 
 1. Docker
