@@ -239,8 +239,8 @@ INSERT INTO `StorageEvent` (`action`,`timestamp`,`user`,`shelf`,`storage_room`,`
 VALUES 
 ("checked_in","1539679491","useon","DNA1-1","DNA materialrum 1","DNA",1),
 ("checked_out","1559679491","useon","DNA1-1","DNA materialrum 1","DNA",1),
-("checked_in","1565679491","useon","DNA1-1","DNA materialrum 2","DNA",2),
-("checked_in","1565679491","useon","DNA1-1","DNA materialrum 2","DNA",3),
+("checked_in","1565679491","useon","DNA1-1","DNA materialrum 1","DNA",2),
+("checked_in","1565679491","useon","DNA1-1","DNA materialrum 1","DNA",3),
 ("checked_in","1524679491","useon","UPP1","Uppackning förråd","Uppackning",4),
 ("discarded","1534679491","useon","UPP1","Uppackning förråd","Uppackning",4),
 ("checked_in","1554019491","useon","UPP1","Uppackning förråd","Uppackning",5),
