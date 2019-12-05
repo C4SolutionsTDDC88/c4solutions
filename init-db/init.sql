@@ -177,7 +177,7 @@ BEGIN
 		IF  (last_status = "checked_in") THEN
 			SET NEW.abnormal_activity_flag = 1;
 			SELECT (NEW.timestamp - last_timestamp) INTO time_diff;
-			UPDATE User SET unaccounted_time = (unaccounted_time + time_diff) WHERE id = NEW.user;
+			UPDATE User SET unaccounted_time = (unaccounted_time + time_diff) WHERE shortcode = NEW.user;
 			UPDATE Article SET unaccounted_time = (unaccounted_time + time_diff) WHERE id = NEW.article;
 		END IF;
 	END IF;
