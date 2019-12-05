@@ -12,7 +12,7 @@ services:
     environment:
       PROD_URL: '${PROD_URL}'
       PROD_PORT: '${PROD_PORT}'
-      DEV_URL: '${DEV_URL}'
+      DEV_URL: '${DEV_URL_FRONTEND}'
       DEV_FRONTEND_PORT: '${DEV_FRONTEND_PORT}'
       DEV_BACKEND_PORT: '${DEV_BACKEND_PORT}'
       APISUFFIX: '${APISUFFIX}'
