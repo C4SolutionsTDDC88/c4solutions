@@ -158,9 +158,13 @@ UNION
 SELECT 'OUPPACKAT' AS 'material_number', `Case`.reference_number, Branch.name as 'branch', StorageRoom.name as 'storage_room', Package.package_number as 'package',
 Shelf.shelf_name as 'shelf', 'checked_in' as 'status', '-' as 'timestamp', '-' as last_modified, '-' as 'description', '-' as 'unaccounted_time', '-' as 'id'
 FROM Package, StorageRoom, Branch, Shelf, Container, `Case`
-WHERE Package.unpacked = 1 AND StorageRoom.branch = Branch.id AND Container.current_storage_room = StorageRoom.id 
-AND Container.id = Package.id AND Shelf.id = Package.shelf AND Package.case = `Case`.id;
-
+WHERE Package.unpacked = 1 AND Container.id = Package.id AND Package.case = `Case`.id AND 
+StorageRoom.branch = Branch.id AND Container.current_storage_room = StorageRoom.id AND Shelf.id = Package.shelf
+UNION
+SELECT 'OUPPACKAT' AS 'material_number', `Case`.reference_number, '-' as 'branch', '-' as 'storage_room', Package.package_number as 'package',
+'-' as 'shelf', 'checked_in' as 'status', '-' as 'timestamp', '-' as last_modified, '-' as 'description', '-' as 'unaccounted_time', '-' as 'id'
+FROM Package, Container, `Case`
+WHERE Package.unpacked = 1 AND Container.id = Package.id AND Package.case = `Case`.id AND Package.shelf IS NULL AND Container.current_storage_room IS NULL	;
 
 
 DELIMITER $$
