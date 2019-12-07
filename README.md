@@ -48,5 +48,17 @@ Sometimes docker caches and doesn't update wanted changes. Run the command ```np
 ### Explanation of the flow
 While developing the application the front-end and back-end are hosted as two different services, meanwhile in production the front-end is hosted from the same service as the back-end application. The database is always hosted as an independent service. To describe the deployment steps in a more general fashion, we build the front-end as a static application and later during the docker build copy over the static front-end files to the back-end service deployed. So only two docker containers are running while in production meanwhile 3 are running when developing the application. 
 
+## Testing
 
+### Back-end testing - Integration tests
+1. In a terminal see that c4solutions is your current working directory
+2. Run ```npm run test:backend``` to start back-end tests
+
+### Front-end testing - E2E tests
+1. In a terminal see that c4solutions is your current working directory
+2. Go into front-end repo ```cd front-end```
+3. Go into test folder ```cd test```
+4. Run ```npm install```
+5. Go back to c4solutions directory ```cd ../..```
+6. Run ```npm run test:e2e``` to start front-end tests
 
