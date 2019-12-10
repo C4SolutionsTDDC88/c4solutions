@@ -33,7 +33,7 @@ All the prerequisites have been fetch with sudo apt-get <package-name>
 ## Setup environment
 
 1. Copy the config file ```ngnix/example-config``` to ```/etc/nginx/sites-enabled``` destination on the server. (Make sure the default config in ```/etc/nginx/sites-enabled``` is removed).
-2. To adjust the ports used in the project, adjust variables in ```.env``` in this repository to adjust the backend ports, and ```frontend/src/environments``` to desired backend url.
+2. To adjust the ports used in the project, adjust variables in ```.env``` in this repository to adjust the backend ports, and ```frontend/src/environments``` to desired backend API url.
 3. Attach wanted database to the folder ```db_data/c4db``` in this repository, if the database does not exist, the init script ```init-db/init.sql``` will executed to populate a mockdatabase.
 
 ## Deployment
